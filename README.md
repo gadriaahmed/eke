@@ -65,34 +65,35 @@ Listings matching any blacklist keyword (case-insensitive, checked against title
 
 ## Usage
 
-**Terminal 1 — start the API** (keep running):
+**Terminal 1 — start the backend** (keep running):
 
 ```bash
-npm run be
+npm run be          # scraper API (port 8000) + Chrome debug port for Immowelt/Wohnsinn
+npm run web-api     # web backend (port 8001) — needed only if using the Angular UI
+npm run start       # runs all three (be + web-api + ui) concurrently
 ```
-
-This starts the API server and launches a Chrome instance on port 9222 for Immowelt/Wohnsinn. Your personal Chrome profile is not affected.
 
 **Terminal 2 — fetch and manage listings:**
 
 ```bash
-npm run fe          # fetch new listings from all sources
-npm run list        # show all pending listings
-npm run stats       # show counts per status
+npm run fetch-all   # fetch new listings from all sources
+npm run fetch       # fetch only Immowelt and Wohnsinn (Chrome-dependent sources)
+npm run list        # show all pending listings in a table
+npm run stats       # show counts per status and last fetch time
 ```
 
-For `done` and `skip`, pass the adid directly to the Python command (npm scripts don't forward arguments cleanly):
+For `done` and `skip`, pass the adid with `--`:
 
 ```bash
-.venv/bin/python -m eke.cli done <adid>
-.venv/bin/python -m eke.cli skip <adid>
+npm run done -- <adid>   # mark a listing as contacted
+npm run skip -- <adid>   # mark a listing as not relevant
 ```
 
-Running `fetch` a second time only shows genuinely new listings — already seen ads are never re-shown.
+Running fetch a second time only shows genuinely new listings — already seen ads are never re-shown.
 
 ## Table columns
 
-| Column | Source |
+| Column | What it shows |
 |---|---|
 | Title | Listing title |
 | Price | Monthly rent (Warm/Kalt where known) |
@@ -104,11 +105,11 @@ Running `fetch` a second time only shows genuinely new listings — already seen
 
 ## Automation (optional)
 
-Run `fetch` automatically every 20 minutes via cron:
+Run `fetch-all` automatically every 20 minutes via cron:
 
 ```bash
 crontab -e
-# Add:
+# Add (replace ~/Workspace/eke with your actual path):
 */20 * * * * cd ~/Workspace/eke/backend && ../.venv/bin/python -m eke.cli fetch >> ../logs/fetch.log 2>&1
 ```
 
@@ -117,5 +118,5 @@ crontab -e
 To clear all saved listings and start fresh:
 
 ```bash
-sqlite3 state.db "DELETE FROM listings; DELETE FROM filter_log;"
+npm run clear
 ```

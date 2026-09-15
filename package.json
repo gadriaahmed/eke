@@ -10,7 +10,8 @@
     "list": "cd backend && ../.venv/bin/python -m eke.cli list",
     "done": "cd backend && ../.venv/bin/python -m eke.cli done",
     "skip": "cd backend && ../.venv/bin/python -m eke.cli skip",
-    "stats": "cd backend && ../.venv/bin/python -m eke.cli stats"
+    "stats": "cd backend && ../.venv/bin/python -m eke.cli stats",
+    "clear": "sqlite3 state.db \"DELETE FROM listings; DELETE FROM filter_log;\""
   },
   "devDependencies": {
     "concurrently": "^10.0.4"
