@@ -1,0 +1,9 @@
+state.db
+logs/
+.env
+__pycache__/
+*.pyc
+.venv/
+.DS_Store
+*.zip
+.playwright-mcp/

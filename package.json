@@ -1,0 +1,18 @@
+{
+  "private": true,
+  "scripts": {
+    "start": "concurrently -n scraper,api,ui -c yellow,blue,green \"npm run be\" \"npm run web-api\" \"npm run ui\"",
+    "be": "./backend/start-api.sh",
+    "web-api": "cd backend && ../.venv/bin/python -m uvicorn web_api:app --port 8001 --reload",
+    "ui": "cd web && npm run start",
+    "fetch-all": "cd backend && ../.venv/bin/python -m eke.cli fetch",
+    "fetch": "cd backend && ../.venv/bin/python -m eke.cli fetch --sources immowelt,wohnsinn",
+    "list": "cd backend && ../.venv/bin/python -m eke.cli list",
+    "done": "cd backend && ../.venv/bin/python -m eke.cli done",
+    "skip": "cd backend && ../.venv/bin/python -m eke.cli skip",
+    "stats": "cd backend && ../.venv/bin/python -m eke.cli stats"
+  },
+  "devDependencies": {
+    "concurrently": "^10.0.4"
+  }
+}
