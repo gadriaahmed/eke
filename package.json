@@ -6,7 +6,7 @@
     "web-api": "cd backend && ../.venv/bin/python -m uvicorn web_api:app --port 8001 --reload",
     "ui": "cd web && npm run start",
     "fetch-all": "cd backend && ../.venv/bin/python -m eke.cli fetch",
-    "fetch": "cd backend && ../.venv/bin/python -m eke.cli fetch --sources immowelt,wohnsinn",
+    "fetch": "cd backend && ../.venv/bin/python -m eke.cli fetch --sources immowelt,wohnsinn,muenchner-wohnen",
     "list": "cd backend && ../.venv/bin/python -m eke.cli list",
     "done": "cd backend && ../.venv/bin/python -m eke.cli done",
     "skip": "cd backend && ../.venv/bin/python -m eke.cli skip",

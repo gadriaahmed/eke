@@ -118,7 +118,7 @@ class UltraOptimizedScraper:
         try:
             # Use more specific selector to reduce DOM traversal
             items = await page.query_selector_all(
-                ".ad-listitem:not(.is-topad):not(.badge-hint-pro-small-srp) article[data-adid]"
+                "#srchrslt-adtable article[data-adid]"
             )
 
             results = []
@@ -162,22 +162,27 @@ class UltraOptimizedScraper:
                 return None
 
             # Parallel extraction of text content
-            title_task = self._get_text_content(
-                article, "h2.text-module-begin a.ellipsis"
-            )
+            title_task = self._get_text_content(article, "h3 a")
             price_task = self._get_text_content(
-                article, "p.aditem-main--middle--price-shipping--price"
+                article, "p.text-title3.font-strong.text-secondary"
             )
             desc_task = self._get_text_content(
-                article, "p.aditem-main--middle--description"
+                article, "p.mb-xsmall.text-bodyRegular.text-onSurfaceSubdued"
             )
-            date_task = self._get_text_content(article, ".aditem-main--top--right")
-            loc_task = self._get_text_content(article, ".aditem-main--top--left")
-            tags_task = self._get_text_content(article, "p.aditem-main--middle--tags")
+            loc_task = self._get_text_content(
+                article, "div.text-onSurfaceNonessential span"
+            )
+            tags_task = self._get_text_content(
+                article, "p.font-strong.text-onSurfaceSubdued"
+            )
 
-            title_text, price_text, description_text, date_raw, loc_raw, tags_raw = await asyncio.gather(
-                title_task, price_task, desc_task, date_task, loc_task, tags_task, return_exceptions=True
+            title_text, price_text, description_text, loc_raw, tags_raw = await asyncio.gather(
+                title_task, price_task, desc_task, loc_task, tags_task, return_exceptions=True
             )
+            # Kleinanzeigen no longer renders a per-listing date as plain text
+            # (it only lives in a client-hydration JSON blob) — age falls back
+            # to first_seen_at in the CLI.
+            date_raw = ""
 
             # Process price text efficiently
             if isinstance(price_text, str):
@@ -275,7 +280,9 @@ class UltraOptimizedScraper:
                     # Wait for essential content only
                     try:
                         await page.wait_for_selector(
-                            ".ad-listitem", timeout=5000, state="visible"
+                            "#srchrslt-adtable article[data-adid]",
+                            timeout=5000,
+                            state="visible",
                         )
                     except Exception:
                         # Continue even if selector not found - might be empty page

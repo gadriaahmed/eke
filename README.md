@@ -14,6 +14,7 @@ Fetches new rental listings from multiple German platforms, filters out unwanted
 | `immowelt` | Immowelt (requires Chrome with debug port) |
 | `wohnsinn` | Wohnsinn (requires Chrome with debug port + login) |
 | `ohne-makler` | Ohne-Makler |
+| `muenchner-wohnen` | Munchner Wohnen listings on Immowelt, filtered by company name (requires Chrome with debug port) |
 
 ## Requirements
 

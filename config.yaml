@@ -3,28 +3,23 @@ api_url: "http://localhost:8000"
 searches:
   - name: "Kleinanzeigen"
     source: kleinanzeigen
-    url: "https://www.kleinanzeigen.de/s-wohnung-mieten/koeln/sortierung:neuste/anzeige:angebote/preis:500:1350/c203l945+wohnung_mieten.zimmer_d:2.5%2C"
+    url: "https://www.kleinanzeigen.de/s-wohnung-mieten/muenchen/sortierung:neuste/anzeige:angebote/preis:500:1350/c203l6411+wohnung_mieten.zimmer_d:2.5%2C"
     max_pages: 3
   - name: "WG Gesucht   "
     source: wg-gesucht
-    url: "https://www.wg-gesucht.de/wohnungen-und-haeuser-in-Koeln.73.2+3.1.0.html?categories%5B%5D=2&categories%5B%5D=3&rent_types%5B%5D=2&rent_range=0%2C1350&min_rent=0&max_rent=1350&offer_filter=1&city_id=73&sort_order=0&noDeact=1&rMin=0&rMax=1350&rmMin=2%2C5&rmMax=4%2C5&exc=2"
+    url: "https://www.wg-gesucht.de/wohnungen-und-haeuser-in-Muenchen.90.2+3.1.0.html?country_code=de&city_name=Muenchen&categories%5B%5D=2&categories%5B%5D=3&rent_types%5B%5D=2&rent_range=0%2C1350&min_rent=0&max_rent=1350&offer_filter=1&city_id=90&sort_order=0&noDeact=1&rMax=1350&rmMin=2%2C5&rmMax=4%2C5&exc=2"
     max_pages: 3
-  - name: "GAG          "
-    source: gag
-    url: "https://www.gag-koeln.de/immobiliensuche/wohnung-mieten?filter=%7B%22toRoom%22%3A4%2C%22fromRoom%22%3A2.5%2C%22fromLivingSpace%22%3A0%2C%22toLivingSpace%22%3A0%2C%22fromTotalRent%22%3A0%2C%22toTotalRent%22%3A1350%2C%22objectNumber%22%3A%22%22%2C%22orderBy%22%3A%22time%22%2C%22ordering%22%3A%22DESC%22%2C%22districts%22%3A%5B%5D%7D"
   - name: "Vonovia      "
     source: vonovia
-    url: "https://www.vonovia.de/zuhause-finden/immobilien?rentType=miete&city=K%C3%B6ln&immoType=wohnung&priceMax=1350&minRooms=3&orderBy=date_asc"
-  - name: "Grand City   "
-    source: grandcity
-    url: "https://www.grandcityproperty.de/wohnungssuche?city=K%C3%B6ln&cityField=K%C3%B6ln&type=M&price=1350&rooms=2&torooms=4&size=&radius=&cityText=St%C3%A4dte%7CK%C3%B6ln%7CK%C3%B6ln"
+    url: "https://www.vonovia.de/zuhause-finden/immobilien?rentType=miete&city=M%C3%BCnchen&lift=0&parking=0&cellar=0&immoType=wohnung&priceMax=1400&minRooms=2&floor=Beliebig&bathtub=0&bathwindow=0&bathshower=0&furnished=0&kitchenEBK=0&toiletSeparate=0&disabilityAccess=egal&seniorFriendly=0&balcony=egal&garden=0&parkingCarport=0&parkingStellplatz=0&parkingGarage=0&parkingTiefgarage=0&subsidizedHousingPermit=egal&locationDisplay=M%C3%BCnchen"
   - name: "Immowelt     "
     source: immowelt
-    url: "https://www.immowelt.de/classified-search?distributionTypes=Rent&estateTypes=House,Apartment&locations=AD08DE2179&numberOfRoomsMax=4&numberOfRoomsMin=2.5&priceMax=1350&priceType=Warmrent&order=DateDesc"
+    url: "https://www.immowelt.de/classified-search?distributionTypes=Rent&estateTypes=House,Apartment&locations=AD08DE6345&numberOfRoomsMax=4&numberOfRoomsMin=2.5&priceMax=1350&priceType=Warmrent&order=DateDesc"
     max_pages: 1
-  - name: "Wohnsinn     "
-    source: wohnsinn
-    url: "https://mieten.wohnsinn.com/suche?placeId=dXJuOm1ieHBsYzpBbjBJT2c&placeName=K%C3%B6ln&coldRent=1100&rooms=3"
+  - name: "Muenchner Wohnen"
+    source: muenchner-wohnen
+    url: "https://www.immowelt.de/classified-search?distributionTypes=Rent&estateTypes=House,Apartment&locations=AD08DE6345&numberOfRoomsMax=4&numberOfRoomsMin=2.5&priceMax=1350&priceType=Warmrent&order=DateDesc"
+    max_pages: 5
 blacklist:
   - tausch
   - swap

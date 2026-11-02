@@ -19,7 +19,7 @@ from scrapers.inserate_ultra_optimized import (
     _filter_by_min_publish_date,
 )
 
-_TOTAL_RESULTS_SELECTOR = {"breadcrump_summary": ".breadcrump-summary"}
+_TOTAL_RESULTS_SELECTOR = {"breadcrump_summary": "#srp-breadcrumb-summary"}
 
 
 def inject_page(url: str, page_num: int) -> str:

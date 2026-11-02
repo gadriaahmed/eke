@@ -13,7 +13,7 @@ class SearchConfig:
     name: str
     url: str
     max_pages: int = 3
-    source: str = "kleinanzeigen"  # kleinanzeigen | wg-gesucht | immowelt | gag | vonovia | ohne-makler
+    source: str = "kleinanzeigen"  # kleinanzeigen | wg-gesucht | immowelt | gag | vonovia | ohne-makler | grandcity | muenchner-wohnen
 
 
 @dataclass

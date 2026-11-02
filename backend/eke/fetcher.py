@@ -32,11 +32,13 @@ def fetch_search(
     if search.source == "gag":
         return _fetch_gag(search)
     if search.source == "vonovia":
-        return _fetch_vonovia(search)
+        return _fetch_vonovia(api_url, search)
     if search.source == "ohne-makler":
         return _fetch_ohne_makler(search)
     if search.source == "grandcity":
         return _fetch_grandcity(search)
+    if search.source == "muenchner-wohnen":
+        return _fetch_muenchner_wohnen(api_url, search)
     return _fetch_kleinanzeigen(api_url, search, min_publish_date)
 
 
@@ -96,9 +98,16 @@ def _fetch_ohne_makler(search: SearchConfig) -> list[RawListing]:
     ]
 
 
-def _fetch_vonovia(search: SearchConfig) -> list[RawListing]:
+def _fetch_vonovia(api_url: str, search: SearchConfig) -> list[RawListing]:
     from . import vonovia_fetcher
-    listings = vonovia_fetcher.fetch_search(search)
+    payload = {"url": search.url, "max_pages": search.max_pages}
+    with httpx.Client(timeout=90) as client:
+        response = client.post(f"{api_url}/vonovia-search", json=payload)
+        response.raise_for_status()
+    data = response.json()
+    if not data.get("success") or "error" in data:
+        raise RuntimeError(data.get("error", "Vonovia scrape failed"))
+    listings = [vonovia_fetcher.to_listing(item) for item in data.get("results", [])]
     return [
         RawListing(
             adid=r.adid, url=r.url, title=r.title, price=r.price,
@@ -123,6 +132,19 @@ def _fetch_wohnsinn(api_url: str, search: SearchConfig) -> list[RawListing]:
 def _fetch_grandcity(search: SearchConfig) -> list[RawListing]:
     from . import grandcity_fetcher
     listings = grandcity_fetcher.fetch_search(search)
+    return [
+        RawListing(
+            adid=r.adid, url=r.url, title=r.title, price=r.price,
+            description="", location=r.location, published_at=r.published_at,
+            size=r.size, rooms=_fmt_rooms(r.rooms),
+        )
+        for r in listings
+    ]
+
+
+def _fetch_muenchner_wohnen(api_url: str, search: SearchConfig) -> list[RawListing]:
+    from . import muenchner_wohnen_fetcher
+    listings = muenchner_wohnen_fetcher.fetch_search(api_url, search)
     return [
         RawListing(
             adid=r.adid, url=r.url, title=r.title, price=r.price,

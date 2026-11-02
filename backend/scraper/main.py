@@ -9,6 +9,7 @@ from routers import (
     inserate_by_url,
     immowelt,
     wohnsinn,
+    vonovia,
 )
 from utils.browser import OptimizedPlaywrightManager
 from utils.asyncio_optimizations import EventLoopOptimizer
@@ -63,3 +64,4 @@ app.include_router(convert_url.router)
 app.include_router(inserate_by_url.router)
 app.include_router(immowelt.router)
 app.include_router(wohnsinn.router)
+app.include_router(vonovia.router)

@@ -9,7 +9,8 @@
 
 set -e
 
-API_DIR="$(dirname "$0")/scraper"
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+API_DIR="$SCRIPT_DIR/scraper"
 
 if [ ! -d "$API_DIR" ]; then
   echo "Error: backend/scraper not found at $API_DIR"
@@ -34,4 +35,18 @@ fi
 cd "$API_DIR"
 
 echo "Starting kleinanzeigen API at http://localhost:8000 ..."
-HEADLESS=true uv run uvicorn main:app --host 0.0.0.0 --port 8000
+
+# Resolve uv: prefer a system-wide install, fall back to the project's own
+# .venv (where setup installs it via `pip install uv` if Homebrew isn't usable).
+if command -v uv >/dev/null 2>&1; then
+  UV_BIN="uv"
+else
+  UV_BIN="$SCRIPT_DIR/../.venv/bin/uv"
+  if [ ! -x "$UV_BIN" ]; then
+    echo "Error: uv not found on PATH and not found at $UV_BIN"
+    echo "Install it with: .venv/bin/pip install uv  (run from the project root)"
+    exit 1
+  fi
+fi
+
+HEADLESS=true "$UV_BIN" run uvicorn main:app --host 0.0.0.0 --port 8000
