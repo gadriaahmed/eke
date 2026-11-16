@@ -5,6 +5,7 @@ Run with: .venv/bin/python -m uvicorn web_api:app --port 8001 --reload
 from __future__ import annotations
 
 import sys
+import threading
 from pathlib import Path
 
 # Make sure the eke package (and its deps) are importable
@@ -16,9 +17,13 @@ from datetime import datetime, timezone
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
-from eke import db, fetcher, config as cfg, filter as flt, wgg_fetcher
+from eke import db, fetcher, config as cfg, filter as flt, wgg_fetcher, notifier
 
 EXCLUDED_SOURCES = {"immowelt", "wohnsinn"}
+
+# Only one fetch at a time; the stop event lets the user abort a running fetch.
+_fetch_lock = threading.Lock()
+_stop_event = threading.Event()
 
 
 @asynccontextmanager
@@ -78,6 +83,30 @@ def restore_listing(adid: str):
 
 @app.post("/api/fetch")
 def run_fetch():
+    if not _fetch_lock.acquire(blocking=False):
+        raise HTTPException(status_code=409, detail="A fetch is already running")
+    _stop_event.clear()
+    try:
+        return _do_fetch()
+    finally:
+        _fetch_lock.release()
+
+
+@app.post("/api/fetch/stop")
+def stop_fetch():
+    """Ask the running fetch to stop after the source it is currently on."""
+    running = _fetch_lock.locked()
+    if running:
+        _stop_event.set()
+    return {"stopping": running}
+
+
+@app.get("/api/fetch/status")
+def fetch_status():
+    return {"running": _fetch_lock.locked()}
+
+
+def _do_fetch():
     try:
         conf = cfg.load()
     except (FileNotFoundError, ValueError) as e:
@@ -94,8 +123,11 @@ def run_fetch():
     total_new = 0
     total_filtered = 0
     sources: list[dict] = []
+    new_listings: list[dict] = []
 
     for search in conf.searches:
+        if _stop_event.is_set():
+            break
         if search.source in EXCLUDED_SOURCES:
             continue
 
@@ -142,6 +174,8 @@ def run_fetch():
             continue
 
         for listing in listings:
+            if _stop_event.is_set():
+                break
             if not listing["adid"]:
                 continue
             if db.already_seen(listing["adid"]):
@@ -154,7 +188,7 @@ def run_fetch():
                 total_filtered += 1
                 continue
 
-            db.insert_listing(
+            inserted = db.insert_listing(
                 adid=listing["adid"],
                 url=listing["url"],
                 title=listing["title"],
@@ -166,9 +200,18 @@ def run_fetch():
                 size=listing["size"],
                 rooms=listing["rooms"],
             )
-            src_new += 1
-            total_new += 1
+            if inserted:
+                src_new += 1
+                total_new += 1
+                new_listings.append(listing)
 
         sources.append({"name": search.name, "new": src_new, "filtered": src_filtered})
 
-    return {"new": total_new, "filtered": total_filtered, "sources": sources}
+    notifier.send_new_listings_email(new_listings)
+
+    return {
+        "new": total_new,
+        "filtered": total_filtered,
+        "sources": sources,
+        "stopped": _stop_event.is_set(),
+    }

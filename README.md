@@ -64,6 +64,22 @@ blacklist:
 
 Listings matching any blacklist keyword (case-insensitive, checked against title + description) are silently filtered out and never shown.
 
+## Email notifications (optional)
+
+When `fetch` finds new listings (via `npm run fetch-all`/cron, or the dashboard's
+Fetch button), it can email you a summary. This is off by default.
+
+1. On your Google account, turn on 2-Step Verification: https://myaccount.google.com/security
+2. Generate an App Password: https://myaccount.google.com/apppasswords
+   - App: "Mail", device: "Other" (name it e.g. "eke") — copy the 16-character password it shows.
+3. Copy `.env.example` to `.env` at the repo root and fill in:
+   - `GMAIL_ADDRESS` — your Gmail address
+   - `GMAIL_APP_PASSWORD` — the app password from step 2 (spaces are fine, they're stripped automatically)
+   - `GMAIL_RECIPIENT` — optional, defaults to `GMAIL_ADDRESS` (i.e. email yourself)
+
+`.env` is gitignored — never commit it. Leaving it unset or missing disables the
+feature entirely with no warnings.
+
 ## Usage
 
 **Terminal 1 — start the backend** (keep running):

@@ -14,6 +14,7 @@ from rich.table import Table
 from . import config as cfg
 from . import db
 from . import fetcher
+from . import notifier
 from . import wgg_fetcher
 from . import filter as flt
 
@@ -77,6 +78,7 @@ def fetch(
 
     total_new = 0
     total_filtered = 0
+    new_listings: list[dict] = []
 
     for search in conf.searches:
         if allowed and search.source not in allowed:
@@ -128,7 +130,7 @@ def fetch(
                 filtered_count += 1
                 continue
 
-            db.insert_listing(
+            inserted = db.insert_listing(
                 adid=listing.adid,
                 url=listing.url,
                 title=listing.title,
@@ -140,7 +142,17 @@ def fetch(
                 size=listing.size,
                 rooms=listing.rooms,
             )
-            new_count += 1
+            if inserted:
+                new_count += 1
+                new_listings.append({
+                    "title": listing.title,
+                    "price": listing.price,
+                    "size": listing.size,
+                    "rooms": listing.rooms,
+                    "location": listing.location,
+                    "url": listing.url,
+                    "search_name": search.name,
+                })
 
         total_new += new_count
         total_filtered += filtered_count
@@ -153,6 +165,8 @@ def fetch(
         f"\n[bold]Done.[/bold] {total_new} new listing(s) added, "
         f"{total_filtered} filtered out."
     )
+
+    notifier.send_new_listings_email(new_listings)
 
     if total_new:
         console.print()

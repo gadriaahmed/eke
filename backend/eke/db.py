@@ -72,10 +72,12 @@ def insert_listing(
     search_name: str,
     size: str = "",
     rooms: str = "",
-) -> None:
+) -> bool:
+    """Insert a listing. Returns True if a row was actually inserted, False if
+    it was already present (INSERT OR IGNORE hit the adid PK)."""
     now = datetime.now(timezone.utc).isoformat()
     with _conn() as con:
-        con.execute(
+        cur = con.execute(
             """
             INSERT OR IGNORE INTO listings
                 (adid, url, title, price, description, location, size, rooms, published_at, first_seen_at, search_name)
@@ -83,6 +85,7 @@ def insert_listing(
             """,
             (adid, url, title, price, description, location, size, rooms, published_at, now, search_name),
         )
+        return cur.rowcount > 0
 
 
 def insert_filter_log(adid: str, title: str, matched_keyword: str) -> None:

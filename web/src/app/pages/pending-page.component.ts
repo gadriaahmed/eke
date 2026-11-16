@@ -1,14 +1,11 @@
-import { Component, OnInit, OnDestroy, signal, inject } from '@angular/core';
+import { Component, OnInit, signal, inject } from '@angular/core';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { Subscription, interval } from 'rxjs';
 import { ListingService, Listing, FetchSourceResult } from '../listing.service';
 import { ListingsTableComponent } from '../listings-table/listings-table.component';
-
-const POLL_INTERVAL_MS = 5 * 60 * 1000;
 
 const ACTIONS = [
   { action: 'skip' as const,      label: 'Skip',     icon: 'close',           color: 'warn',    style: 'stroked' as const },
@@ -26,6 +23,14 @@ interface FetchLogEntry {
   imports: [MatProgressBarModule, MatIconModule, MatButtonModule, MatSnackBarModule, MatTooltipModule, ListingsTableComponent],
   template: `
     @if (fetching()) { <mat-progress-bar mode="indeterminate"></mat-progress-bar> }
+    <div class="fetch-controls">
+      <button mat-flat-button color="primary" (click)="triggerFetch()" [disabled]="fetching()">
+        <mat-icon>play_arrow</mat-icon> Fetch
+      </button>
+      <button mat-stroked-button color="warn" (click)="stopFetch()" [disabled]="!fetching() || stopping()">
+        <mat-icon>stop</mat-icon> {{ stopping() ? 'Stopping…' : 'Stop' }}
+      </button>
+    </div>
     <div class="fetch-log">
       @for (entry of fetchLog(); track entry.time) {
         <div class="log-entry">
@@ -50,6 +55,7 @@ interface FetchLogEntry {
   `,
   styles: [`
     :host { display: flex; flex-direction: column; height: 100%; }
+    .fetch-controls { display: flex; gap: 8px; padding: 8px 12px; }
     .fetch-log {
       padding: 6px 12px;
       font-size: 12px;
@@ -69,33 +75,31 @@ interface FetchLogEntry {
     .log-empty { color: #555; }
   `],
 })
-export class PendingPageComponent implements OnInit, OnDestroy {
+export class PendingPageComponent implements OnInit {
   private svc = inject(ListingService);
   private snack = inject(MatSnackBar);
 
   rows = signal<Listing[]>([]);
   fetching = signal(false);
+  stopping = signal(false);
   fetchLog = signal<FetchLogEntry[]>([]);
   buttons = ACTIONS;
-
-  private sub?: Subscription;
 
   ngOnInit() {
     Notification.requestPermission();
     this.reload();
-    this.triggerFetch();
-    this.sub = interval(POLL_INTERVAL_MS).subscribe(() => this.triggerFetch());
   }
 
-  ngOnDestroy() { this.sub?.unsubscribe(); }
-
   triggerFetch() {
+    if (this.fetching()) return;
     this.fetching.set(true);
+    this.stopping.set(false);
     this.svc.runFetch().subscribe({
       next: r => {
         const now = new Date();
         const time = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
         const sources: FetchSourceResult[] = r.sources ?? [{ name: 'all', new: r.new, filtered: r.filtered }];
+        if (r.stopped) sources.push({ name: 'stopped by user', new: 0, filtered: 0, error: 'stopped' });
         this.fetchLog.update(log => [{ time, sources }, ...log]);
         if (r.new > 0) {
           this.notify(r.new);
@@ -104,10 +108,16 @@ export class PendingPageComponent implements OnInit, OnDestroy {
       },
       error: err => {
         this.fetching.set(false);
+        this.stopping.set(false);
         this.snack.open('Fetch failed: ' + (err.message || err), 'Dismiss', { duration: 5000 });
         this.reload();
       },
     });
+  }
+
+  stopFetch() {
+    this.stopping.set(true);
+    this.svc.stopFetch().subscribe({ error: () => this.stopping.set(false) });
   }
 
   notify(count: number) {
@@ -133,7 +143,7 @@ export class PendingPageComponent implements OnInit, OnDestroy {
 
   reload() {
     this.svc.getListings('pending').subscribe({
-      next: r => { this.rows.set(r); this.fetching.set(false); },
+      next: r => { this.rows.set(r); this.fetching.set(false); this.stopping.set(false); },
       error: () => this.fetching.set(false),
     });
   }

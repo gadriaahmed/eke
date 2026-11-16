@@ -27,6 +27,7 @@ export interface FetchResult {
   new: number;
   filtered: number;
   sources?: FetchSourceResult[];
+  stopped?: boolean;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -42,6 +43,14 @@ export class ListingService {
 
   runFetch(): Observable<FetchResult> {
     return this.http.post<FetchResult>('/api/fetch', {});
+  }
+
+  stopFetch(): Observable<{ stopping: boolean }> {
+    return this.http.post<{ stopping: boolean }>('/api/fetch/stop', {});
+  }
+
+  fetchStatus(): Observable<{ running: boolean }> {
+    return this.http.get<{ running: boolean }>('/api/fetch/status');
   }
 
   skip(adid: string): Observable<unknown> {

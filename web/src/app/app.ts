@@ -1,12 +1,8 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component } from '@angular/core';
 import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatIconModule } from '@angular/material/icon';
-import { MatButtonModule } from '@angular/material/button';
-import { MatTooltipModule } from '@angular/material/tooltip';
-import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
-import { ListingService } from './listing.service';
 
 @Component({
   selector: 'app-root',
@@ -18,23 +14,12 @@ import { ListingService } from './listing.service';
     MatToolbarModule,
     MatTabsModule,
     MatIconModule,
-    MatButtonModule,
-    MatTooltipModule,
-    MatSnackBarModule,
   ],
   template: `
     <mat-toolbar color="primary" class="app-toolbar">
       <mat-icon style="margin-right: 8px">apartment</mat-icon>
       <span>eke — Dev</span>
       <span style="flex: 1"></span>
-      <button
-        mat-icon-button
-        (click)="triggerFetch()"
-        [disabled]="fetching()"
-        matTooltip="Fetch now (excludes Immowelt & Wohnsinn)"
-      >
-        <mat-icon>refresh</mat-icon>
-      </button>
     </mat-toolbar>
 
     <nav mat-tab-nav-bar [tabPanel]="tabPanel" color="accent" class="nav-tabs">
@@ -93,22 +78,4 @@ import { ListingService } from './listing.service';
   ],
 })
 export class App {
-  private svc = inject(ListingService);
-  private snack = inject(MatSnackBar);
-  fetching = signal(false);
-
-  triggerFetch() {
-    this.fetching.set(true);
-    this.svc.runFetch().subscribe({
-      next: (r) => {
-        this.fetching.set(false);
-        const msg = `Fetched: ${r.new} new, ${r.filtered} filtered`;
-        this.snack.open(msg, r.new > 0 ? 'OK' : undefined, { duration: r.new > 0 ? 5000 : 3000 });
-      },
-      error: (err) => {
-        this.fetching.set(false);
-        this.snack.open('Fetch failed: ' + (err.message || err), 'Dismiss', { duration: 5000 });
-      },
-    });
-  }
 }
